@@ -1,0 +1,131 @@
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from matplotlib.pyplot import MultipleLocator
+
+Pressure_meter=['n1','n4','n31','n54','n105','n114','n163','n188','n215','n229','n288','n296','n332','n342','n410','n415','n429','n458','n469','n495','n506','n516','n519','n549','n613','n636','n644','n679','n722','n726','n740','n752','n769']
+PL=(pd.read_excel('CL.xlsx')).values
+
+A0=[[0 for i in range(len(PL))] for j in range(len(PL))]
+for i in range(len(PL)):
+    for j in range(len(PL)):
+        if PL[i][j]==1:
+            A0[j][i]=1
+            A0[i][j]=1
+A=np.array(A0)
+
+D0=[[0 for i in range(len(PL))] for j in range(len(PL))]
+for i in range(len(PL)):
+    D0[i][i]=sum(A0[i])
+D=np.array(D0)
+
+
+L=D-A
+
+
+w1,v1=np.linalg.eig(L)
+w2=[round(i,3) for i in w1]
+v2=[[round(j,3) for j in v1[i]] for i in range(len(v1))]
+
+
+v2_T=np.array(v2).transpose()
+print(v2_T)
+
+RP=pd.read_excel('2018_SCADA_Pressure.xlsx')
+RP1=RP.values[0:len(RP.values[:,0]),1:len(RP.values[0,:])]
+RP2=RP1.tolist()
+RP3=(np.array(RP2)).transpose()[:,:,np.newaxis]
+
+start_time=6000
+end_time=28000
+Mynode='n114'
+
+P_i_T=[[] for j in range(len(Pressure_meter))]
+for j in range(len(Pressure_meter)):
+    for t in range(start_time,end_time):
+        P_i_T[j].append(RP2[t-start_time][j])
+
+y= [[] for j in range(len(Pressure_meter))]
+for i in range(len(Pressure_meter)):
+    for t in range(start_time,end_time):
+        y[i].append(t)
+
+
+for i in range(len(Pressure_meter)):
+    if Mynode==Pressure_meter[i]:
+        Mypoint=i
+
+
+plt.figure(figsize=(50,20),dpi=400)
+plt.scatter(y[Mypoint],P_i_T[Mypoint],color='royalblue')
+plt.tick_params(labelsize=100)
+plt.xticks(rotation=30)
+plt.xlim(start_time,end_time)
+
+
+x1_major_locator=MultipleLocator(2000)
+y1_major_locator=MultipleLocator(0.5)
+ax1=plt.gca()
+ax1.spines['bottom'].set_linewidth(2);
+ax1.spines['left'].set_linewidth(2);
+ax1.spines['right'].set_linewidth(2);
+ax1.spines['top'].set_linewidth(2);
+
+
+ax1.xaxis.set_major_locator(x1_major_locator)
+ax1.yaxis.set_major_locator(y1_major_locator)
+ax1.tick_params(axis='both', which='major', direction='in', width=2, length=10)
+x1_label=ax1.get_xticklabels() 
+[x1_label_temp.set_fontname('Times New Roman') for x1_label_temp in x1_label]
+y1_label=ax1.get_yticklabels() 
+[y1_label_temp.set_fontname('Times New Roman') for y1_label_temp in y1_label]
+
+plt.savefig(r'C:\Users\pc\Desktop\p461_n114_6000_28000.png', format='png')
+plt.show()
+
+W=np.array((np.matrix(L))*(np.matrix(RP3)))
+W2=(W).transpose()
+
+for i in range(len(Pressure_meter)):
+    if Mynode==Pressure_meter[i]:
+        Mypoint=i
+    
+x=[]
+W_draw=[]
+for i in range(len(Pressure_meter)):
+    for t in range(start_time,end_time):
+        x.append(t)
+        W_draw.append(W[Mypoint][t])
+        
+
+plt.figure(figsize=(50,10),dpi=400)
+plt.scatter(x,W_draw,color='darkorchid')
+plt.tick_params(labelsize=120)
+plt.xticks(rotation=30)
+plt.xlim(start_time,end_time)
+plt.ylim(2.0,2.8)
+
+#把x轴的刻度间隔设置为1，并存在变量里
+x2_major_locator=MultipleLocator(4000)
+y2_major_locator=MultipleLocator(0.2)
+
+#ax为两条坐标轴的实例
+ax2=plt.gca()
+ax2.xaxis.set_major_locator(x2_major_locator)
+ax2.yaxis.set_major_locator(y2_major_locator)
+
+
+ax2.spines['bottom'].set_linewidth(2);
+ax2.spines['left'].set_linewidth(2);
+ax2.spines['right'].set_linewidth(2);
+ax2.spines['top'].set_linewidth(2);
+
+
+ax2.tick_params(axis='both', which='major', direction='in', width=2, length=10)
+x2_label=ax2.get_xticklabels() 
+[x2_label_temp.set_fontname('Times New Roman') for x2_label_temp in x2_label]
+y2_label=ax2.get_yticklabels() 
+[y2_label_temp.set_fontname('Times New Roman') for y2_label_temp in y2_label]
+
+plt.show()
+
