@@ -1,0 +1,66 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+Pressure_meter=['n1','n4','n31','n54','n105','n114','n163','n188','n215','n229','n288','n296','n332','n342','n410','n415','n429','n458','n469','n495','n506','n516','n519','n549','n613','n636','n644','n679','n722','n726','n740','n752','n769']
+PL=(pd.read_excel('CL2.xlsx')).values
+
+A0=[[0 for i in range(len(PL))] for j in range(len(PL))]
+for i in range(len(PL)):
+    for j in range(len(PL)):
+        if PL[i][j]==1:
+            A0[j][i]=1
+            A0[i][j]=1
+A=np.array(A0)
+nodes=[i for i in range(len(PL))]
+
+
+start_nodes=[]
+end_nodes=[]
+for i in range(len(PL)):
+    for j in range(len(PL)):
+        if PL[i][j]==1:
+            start_nodes.append(i)
+            end_nodes.append(j)
+            
+edges=[[] for i in range(len(start_nodes))]
+for i in range(len(start_nodes)):
+    edges[i].append(start_nodes[i])
+    edges[i].append(end_nodes[i])
+
+Links=[[] for i in range(len(start_nodes))]
+for i in range(len(start_nodes)):
+    Links[i].append(start_nodes[i])
+    Links[i].append(end_nodes[i])
+    Links[i].append(1)
+ar_Links=np.array(Links)
+
+
+import csv
+fl=open('Pressure_Links2.csv','w')
+writer=csv.writer(fl)
+writer.writerow(['from','to','cost'])
+for values in ar_Links:
+    writer.writerow(values)
+fl.close()
+
+data=pd.read_csv('Pressure_Links2.csv')
+res=data.dropna(how='all')
+res.to_csv('Pressure_Links2.csv',index=False)
+
+
+RP=pd.read_excel('2018_SCADA_Pressure.xlsx')
+RP1=RP.values[0:len(RP.values[:,0]),1:len(RP.values[0,:])]
+RP2=RP1.tolist()
+RP3=(np.array(RP2)).transpose()
+
+start_t=0
+end_t=6*30*24*12
+RP4=RP3[:,start_t:end_t]
+#print(len(RP4))
+#print(len(RP4[0]))
+#封装数组
+RP5=(np.array(RP4))[:,:,np.newaxis]
+print(len(RP5))
+print(len(RP5[0]))
+
+np.savez('Pressure2.npz',RP5)
