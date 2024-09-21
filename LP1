@@ -105,11 +105,9 @@ plt.xticks(rotation=30)
 plt.xlim(start_time,end_time)
 plt.ylim(2.0,2.8)
 
-#把x轴的刻度间隔设置为1，并存在变量里
 x2_major_locator=MultipleLocator(4000)
 y2_major_locator=MultipleLocator(0.2)
 
-#ax为两条坐标轴的实例
 ax2=plt.gca()
 ax2.xaxis.set_major_locator(x2_major_locator)
 ax2.yaxis.set_major_locator(y2_major_locator)
@@ -128,4 +126,3 @@ y2_label=ax2.get_yticklabels()
 [y2_label_temp.set_fontname('Times New Roman') for y2_label_temp in y2_label]
 
 plt.show()
-
